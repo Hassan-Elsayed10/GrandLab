@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "756754108474",
+    "project_id": "grand-6bf09",
+    "storage_bucket": "grand-6bf09.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756754108474:android:24295e2d8088e1ae6ea503",
+        "android_client_info": {
+          "package_name": "com.grand"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzKYp6_KK_ITbBf11oZ-aomI4Mjtl8-i4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
