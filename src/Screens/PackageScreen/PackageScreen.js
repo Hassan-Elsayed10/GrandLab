@@ -88,11 +88,10 @@ const styles = ScaledSheet.create({
     container: {
         backgroundColor: '#FFF',
         flex: 1,
-        padding:'10@vs',
     },
     row: {
         flexDirection: 'row',
-        margin: '0@vs',
+        margin: '10@vs',
         padding: '10@vs',
         justifyContent: 'flex-start',
         alignItems: 'center',

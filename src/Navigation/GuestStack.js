@@ -16,26 +16,6 @@ import SuccessfulSign from "../Screens/Auth/SuccessSign";
 const Stack = createStackNavigator();
 
 const GuestStack = () => {
-    const [showBoarding, setShowBoarding] = useState(true);
-
-    useEffect(() => {
-        // Check AsyncStorage to see if the boarding screen has been shown before
-        // AsyncStorage.getItem("boarding_screen_shown")
-        //     .then((value) => {
-        //         if (value !== "true") {
-        //             // Boarding screen has not been shown, so set showBoarding to true
-        //             setShowBoarding(true);
-        //             // After showing the boarding screen, set the flag to true
-        //             AsyncStorage.setItem("boarding_screen_shown", "true");
-        //         } else {
-        //             // Boarding screen has been shown before, so set showBoarding to false
-        //             setShowBoarding(false);
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         console.error("Error accessing AsyncStorage:", error);
-        //     });
-    }, []);
 
     return (
         <Stack.Navigator initialRouteName={"DrawerStack"} screenOptions={{ headerShown: false }}>

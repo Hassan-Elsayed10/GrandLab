@@ -19,7 +19,6 @@ export default function ShowResult() {
     const dispatch = useDispatch();
     const data = useSelector(state => state.data.data);
     const sortedData = data.slice().sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)) ;
-
     useEffect(() => {
         // Dispatch the fetchData action when the component mounts
         dispatch(fetchIdAndData());
@@ -54,13 +53,13 @@ export default function ShowResult() {
                         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                             <FlatList
                                 data={sortedData}
-                                renderItem={({ item }) => <Results item={item} />}
+                                renderItem={({ item, index }) => <Results item={item} index={index} totalCount={sortedData.length}  />}
                                 showsVerticalScrollIndicator={false}
                                 scrollEnabled={false}
                             />
                         </ScrollView>
                     ) : (
-                        <Text style={styles.title1}> No Result Yet</Text>
+                        <Text style={styles.title1}>{t('Notifications')}</Text>
                     )
                 )}
             </View>
@@ -71,7 +70,6 @@ export default function ShowResult() {
 const styles = ScaledSheet.create({
     package: {
         flex: 1,
-        margin: '5@vs',
         backgroundColor:'#FFF'
     },
     title: {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, TextInput, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Icon2 from 'react-native-vector-icons/Fontisto';
 import Icon3 from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,17 +16,27 @@ const ContactScreen = () => {
   const [loading, setLoading] = useState(false);
   const currentLanguage = useSelector((state) => state.language);
   const [complaint, setComplaint] = useState('');
+  const authenticated = useSelector((state) => state.auth.authenticated);
 
+  const open = () => {
+    // if (authenticated) {
+      navigation.navigate('ComplaintsScreen');
+    // } else {
+    //     Alert.alert(
+    //         t('LoginRequired'),
+    //         t('PleaseLoginFirst'),
+    //         [
+    //             { text: t('OK') }
+    //         ],
+    //         { cancelable: false }
+    //     );
+    // }
+};
   // Function to open the specified social media link
   const openLink = (url) => {
     Linking.openURL(url);
   };
-  const handleSubmit = () => {
-    // Handle submission logic here
-    console.log('Complaint submitted:', complaint);
-    // Optionally, you can clear the input after submission
-    setComplaint('');
-  };
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -109,16 +119,15 @@ const ContactScreen = () => {
           <Text style={styles.contactText}>{t('E-mail')}</Text>
         </TouchableOpacity>
       </View>
-      <View style={{}}>
-        <Text style={{fontSize:24,fontWeight:'500',color:'#7A7A7A',padding:5}}>Is there any complaint or Inquirty?</Text>
-
-        </View>
-      <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+      <View>
+        <Text style={{ fontSize: 24, fontWeight: '500', color: '#7A7A7A', padding: 5 }}>{t("complainmsg")}</Text>
+      </View>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <TouchableOpacity
-         style={{ borderColor:'#475AD7',borderWidth:1,borderRadius:20,width:'100%'}}
-         onPress={()=>navigation.navigate('ComplaintsScreen')}
+          style={{ borderColor: '#475AD7', borderWidth: 1, borderRadius: 20, width: '100%' }}
+          onPress={open}
         >
-          <Text style={{fontSize:30,fontWeight:'bold',padding:10, textAlign:'center',color:'#475AD7'}}> Need Help ?</Text>
+          <Text style={{ fontSize: 30, fontWeight: 'bold', padding: 10, textAlign: 'center', color: '#475AD7' }}>{t("needhelp")}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -129,7 +138,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
-    padding:5
+    padding: 5
 
   },
   contactOptions: {

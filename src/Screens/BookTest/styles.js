@@ -120,6 +120,13 @@ export const styles = ScaledSheet.create({
         color: 'red',
         textAlign: 'center',
         fontWeight: '900'
-    }
+    },
+    selectbranch:{
+        fontSize: 22,
+        color: '#475AD7',
+        fontWeight: '900',
+        margin:5
+    },
 });
+
 export default styles;

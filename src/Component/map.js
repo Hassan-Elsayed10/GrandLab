@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next'; // Import useTranslation from re
 
 export default function Brunches({ item }) {
     const { t, i18n } = useTranslation(); // Use the t function to translate text
-    console.log(item)
 
     return (
         <>

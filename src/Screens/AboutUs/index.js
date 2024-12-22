@@ -69,7 +69,7 @@ const AboutUsScreen = () => {
           source={require('../../../Assets/Icons/information.png')}
           style={styles.logo}
         />
-        </View>
+      </View>
       <ScrollView style={{}}>
         <Text style={styles.description}>
           {loading ?
@@ -77,9 +77,9 @@ const AboutUsScreen = () => {
               style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
             />
             :
-           about 
+            about
 
-            }
+          }
         </Text>
       </ScrollView>
     </View>
@@ -88,9 +88,7 @@ const AboutUsScreen = () => {
 
 const styles = ScaledSheet.create({
   container: {
-    // flex: 1,
     alignItems: 'center',
-    // justifyContent: 'center',
     paddingHorizontal: 20,
     backgroundColor: '#FFF',
     flex: 1,
@@ -104,8 +102,8 @@ const styles = ScaledSheet.create({
   },
   content: {
     alignItems: 'center',
-    justifyContent:'center',
-    flex:1
+    justifyContent: 'center',
+    flex: 1
   },
   logo: {
     width: 150,
@@ -114,7 +112,7 @@ const styles = ScaledSheet.create({
   },
   description: {
     textAlign: 'justify',
-    fontSize: "20@vs",
+    fontSize: "10@vs",
     fontWeight: '700',
     color: '#7A7A7A',
   },

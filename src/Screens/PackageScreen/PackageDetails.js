@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -6,65 +6,91 @@ import {
     ScrollView,
     FlatList,
     ActivityIndicator,
-    I18nManager
+    Modal
 } from 'react-native';
 import { ScaledSheet } from 'react-native-size-matters';
 import ArrowIcon from '../../../Assets/Icons/Arrow';
-import axios from 'axios';
-import { useSelector, useDispatch } from 'react-redux';
-
+import { useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import PackageComponent from '../../Component/PackageDetailsComponent';
 import { useTranslation } from 'react-i18next'; // Import useTranslation from react-i18next
 import ArrowRIcon from '../../../Assets/Icons/ArrowRight';
 import PackageSet from '../../Component/packageset';
+import Icon from 'react-native-vector-icons/Ionicons';
 export default function PackageDetails() {
 
     const route = useRoute();
     const item = route.params;
     const navigation = useNavigation();
-    // const [packageset, setPackageSet] = useState([]);
     const [loading, setLoading] = useState(false);
     const { t, i18n } = useTranslation(); // Use the t function to translate text
     const currentLanguage = useSelector((state) => state.language);
-    const name = item.titleEnglish
-    const toggleBook = (name) => {
-        navigation.navigate('BookTest', name)
-    }; 
+    const name = item.titleEnglish;
+    const [isModalVisible, setModalVisible] = useState(false); // Initially false
+
+    const toggleModal = () => {
+        setModalVisible(!isModalVisible); // Toggle the modal visibility
+    }
+    const Homepress = (name) => {
+        navigation.navigate('HomeVisit', name);
+        setModalVisible(false);
+    }
+    const Bookpress = (name) => {
+        navigation.navigate('BookTest', name);
+        setModalVisible(false);
+    }
+
 
     return (
         <View style={styles.container}>
             <View style={styles.row} >
-                {
-                    currentLanguage == 'ar' ?
-                        <TouchableOpacity
-                            hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
-                            onPress={() => navigation.goBack()} >
-                            <ArrowRIcon />
-                        </TouchableOpacity>
-                        :
-                        <TouchableOpacity
-                            hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
-                            onPress={() => navigation.goBack()} >
-                            <ArrowIcon />
-                        </TouchableOpacity>
-
-                }
-                {
-                    currentLanguage == 'en'?
-                    <Text style={styles.text}>{item.titleEnglish ? item.titleEnglish.charAt(0).toUpperCase() + item.titleEnglish.slice(1) : ''}</Text>
-
+                {currentLanguage === 'ar' ?
+                    <TouchableOpacity
+                        hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
+                        onPress={() => navigation.goBack()} >
+                        <ArrowRIcon />
+                    </TouchableOpacity>
                     :
-                    
+                    <TouchableOpacity
+                        hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
+                        onPress={() => navigation.goBack()} >
+                        <ArrowIcon />
+                    </TouchableOpacity>
+                }
+                {currentLanguage === 'en' ?
+                    <Text style={styles.text}>{item.titleEnglish ? item.titleEnglish.charAt(0).toUpperCase() + item.titleEnglish.slice(1) : ''}</Text>
+                    :
                     <Text style={styles.text}>{item.titleArabic ? item.titleArabic.charAt(0).toUpperCase() + item.titleArabic.slice(1) : ''}</Text>
-
                 }
             </View>
-            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Text style={styles.subtitle}>{t('PackagesAvailable')}</Text>
-                <TouchableOpacity style={styles.loginButton} onPress={() => toggleBook(name)}>
+                <TouchableOpacity style={styles.loginButton} onPress={toggleModal}>
                     <Text style={styles.loginButtonText}>{t('ButtonBook')}</Text>
                 </TouchableOpacity>
+                <Modal
+                    visible={isModalVisible}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={toggleModal}
+                >
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                        <View style={{ backgroundColor: 'white', padding: 16, borderRadius: 20, width: '80%' }}>
+                            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                                <Icon name="close-circle-outline" size={30} color="#475AD7" />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.button1} onPress={() => Homepress(name)}>
+                                <Text style={styles.buttonText1}>{t('HeaderHomeVisit')}</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.orText}>{t('or')}</Text>
+                            <View style={styles.orButtonContainer}>
+                                <TouchableOpacity style={styles.orButton} onPress={() => Bookpress(name)}>
+                                    <Text style={styles.orButtonText}>{t('HeaderBookTest')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+
+                </Modal>
             </View>
 
             {loading ?
@@ -74,7 +100,6 @@ export default function PackageDetails() {
                         <FlatList
                             data={item.packageSets}
                             renderItem={({ item, index }) => (
-                                
                                 <PackageSet item={item} index={index} />
                             )}
                             showsVerticalScrollIndicator={false}
@@ -85,6 +110,7 @@ export default function PackageDetails() {
         </View>
     );
 }
+
 const styles = ScaledSheet.create({
     container: {
         padding: '2@vs',
@@ -110,80 +136,6 @@ const styles = ScaledSheet.create({
         fontWeight: '400',
         color: '#454242',
         margin: '20@vs',
-
-    },
-    package: {
-        flex: 1,
-        alignItems: 'flex-start',
-        margin: '5@vs',
-    },
-    packageCart: {
-        backgroundColor: 'rgba(71, 90, 215, 0.15)',
-        borderWidth: 1,
-        borderColor: '#475AD7',
-        borderStyle: 'dashed',
-        borderRadius: 15,
-        alignItems: 'center',
-        width: '100%',
-        height: '10%',
-        marginTop: '10@vs',
-        marginBottom: '20@vs',
-        alignItems: 'flex-start',
-        padding: '5@s'
-    },
-    packagedetail: {
-        backgroundColor: 'rgba(71, 90, 215, 0.15)',
-        borderWidth: 1,
-        borderColor: '#475AD7',
-        borderStyle: 'dashed',
-        borderRadius: 15,
-        width: '100%',
-        height: '10%',
-        marginTop: '10@vs',
-        marginBottom: '20@vs',
-        alignItems: 'flex-start',
-        padding: '5@s',
-        justifyContent: 'center'
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: '700',
-        textAlign: 'center',
-        color: '#454242',
-        marginLeft: '10@s',
-    },
-    textRow: {
-        flexDirection: 'row',
-        flex: 1,
-        alignItems: 'center',
-        marginLeft: '10@s',
-    },
-    subTextCart: {
-        fontSize: 17,
-        fontWeight: '700',
-        color: '#565656',
-        flex: 1,
-    },
-    price: {
-        fontSize: 16,
-        fontWeight: '700',
-        textAlign: 'center',
-        color: '#475AD7',
-        marginRight: '10@vs'
-    },
-    packageTitle: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: '#454242',
-        marginBottom: '20@vs',
-        textAlign: 'left'
-    },
-    packageoverview: {
-        fontSize: 18,
-        fontWeight: '400',
-        color: '#454242',
-        marginBottom: '20@vs',
-        textAlign: 'left'
     },
     loginButton: {
         backgroundColor: '#475AD7',
@@ -195,7 +147,53 @@ const styles = ScaledSheet.create({
         color: '#FFF',
         textAlign: 'center',
         fontWeight: '700',
-        padding:'5@vs'
+        padding: '5@vs'
     },
-
+    button1: {
+        backgroundColor: '#475AD7',
+        borderRadius: 12,
+        marginBottom: '10@vs',
+        paddingVertical: '15@vs',
+        marginTop: '20@vs'
+    },
+    buttonText1: {
+        fontSize: 16,
+        color: '#FFF',
+        textAlign: 'center',
+        fontWeight: '500'
+    },
+    orText: {
+        textAlign: 'center',
+        // marginTop: '10%',
+        color: '#757575',
+        fontWeight: '700',
+        fontSize: 20
+    },
+    orButtonContainer: {
+        alignItems: 'center',
+        marginTop: '5%',
+    },
+    orButton: {
+        backgroundColor: '#FFFF',
+        borderRadius: 12,
+        paddingVertical: 15,
+        width: '100%',
+        marginBottom: 10,
+        borderColor: '#475AD7',
+        borderWidth: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    orButtonText: {
+        fontSize: 16,
+        color: '#475AD7',
+        textAlign: 'center',
+    },
+    closeButton: {
+        alignSelf: 'flex-end'
+    },
+    buttonText55: {
+        fontSize: 30,
+        color: '#475AD7'
+    }
 });

@@ -12,7 +12,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ArrowIcon from "../../../Assets/Icons/Arrow";
 import axios from 'axios'; // Import Axios for HTTP requests
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation,useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { setAuthenticated } from '../../Store/authSlice';
 import Modal from 'react-native-modal';
@@ -48,7 +48,12 @@ export default function HomeVisit() {
     const [prescription, setImageURL] = useState('');
     const { t, i18n } = useTranslation(); // Use the t function to translate text
     const currentLanguage = useSelector((state) => state.language);
-
+    const route = useRoute();
+    useEffect(() => {
+        if (route.params?.requestName) {
+            setTest(route.params.requestName); // Set requestName if passed from another screen
+        }
+    }, [route.params]);
     const openImagePicker = () => {
         const options = {
             title: 'Select Photo',
@@ -339,6 +344,7 @@ export default function HomeVisit() {
                                 onBlur={() => setIsAge(false)}
                                 value={age}
                                 onChangeText={setAge}
+                                keyboardType="numeric"
                             />
                         </View>
                         <View

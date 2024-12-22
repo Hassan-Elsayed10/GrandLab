@@ -199,7 +199,6 @@ const styles = StyleSheet.create({
         color: '#FFF',
         textAlign: 'center',
         fontWeight: '700'
-
     },
 
     RemeberContainer: {
@@ -219,7 +218,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#475AD7',
         fontWeight: '700'
-
     },
     error: {
         color: '#FFF',

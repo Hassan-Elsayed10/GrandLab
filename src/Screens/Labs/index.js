@@ -22,7 +22,7 @@ export default function LabScreen() {
     const navigation = useNavigation();
     const { t, i18n } = useTranslation(); // Use the t function to translate text
     const currentLanguage = useSelector((state) => state.language);
-
+    console.log(branches)
     useEffect(() => {
         setLoading(true)
         // Fetch data from the API

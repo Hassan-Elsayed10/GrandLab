@@ -9,52 +9,53 @@ import {
 import { ScaledSheet } from 'react-native-size-matters';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-export default function Results({ item }) {
-    
+export default function Results({ item, index, totalCount }) {
+
     const url = item.resultURL
-    const extractNameFromURL = (url) => {
-        const parts = url.split("/");
-        if (parts.length >= 4) {
-            return parts[parts.length - 2];
-        } else {
-            return "PDF"; // Return a default name if the URL doesn't follow the expected pattern
-        }
-    };
-    const name = extractNameFromURL(url);
-    console.log(item._id)
+    console.log(url)
 
     const Open = async () => {
-        try {    
+        try {
             const token = await AsyncStorage.getItem('accessToken');
             const accessToken = JSON.parse(token);
-    
+
             // Make PUT request to update 'isOpened' variable
-           const response = await axios.put(
-                `https://grandlabs-backend-patient.vercel.app/results/${item._id}`,{
+            const response = await axios.put(
+                `https://grandlabs-backend-patient.vercel.app/results/${item._id}`, {
                 isOpened: true
-           },
+            },
                 {
                     headers: {
                         Authorization: accessToken,
                     },
                 }
-                );
-                if (response.status === 200) {
-                    console.log(`'isOpened' updated successfully for result with ID: ${item._id}`);
-                     Linking.openURL(item.resultURL);
+            );
+            if (response.status === 200) {
+                console.log(`'isOpened' updated successfully for result with ID: ${item._id}`);
+                Linking.openURL(item.resultURL);
 
-                }
-            } catch (error) {
+            }
+        } catch (error) {
             console.error('Error opening URL or updating isOpened:', error);
         }
 
     };
-    
+
     return (
         <View style={{ flex: 1, margin: 10 }}>
-            <TouchableOpacity style={styles.packageCart} onPress={Open}>
-                <Text style={styles.title}>{name}</Text>
-            </TouchableOpacity>
+            {
+                item.isOpened ?
+                    <TouchableOpacity style={styles.packageCartopen} onPress={Open}>
+                        <Text style={styles.title}>{`Result ${totalCount - index}`}</Text>
+                        {!item.isOpened && <Text style={styles.newLabel}>New</Text>}
+                    </TouchableOpacity>
+                    :
+                    <TouchableOpacity style={styles.packageCart} onPress={Open}>
+
+                        <Text style={styles.title}>{`Result ${totalCount - index}`}</Text>
+                        {!item.isOpened && <Text style={styles.newLabel}>(New)</Text>}
+                    </TouchableOpacity>
+            }
         </View>
 
 
@@ -72,7 +73,9 @@ const styles = ScaledSheet.create({
         marginBottom: '20@vs',
         alignItems: 'flex-start',
         padding: '10@s',
-        flex: 1
+        flex: 1,
+        flexDirection: 'row',
+
     },
     title: {
         fontSize: 22,
@@ -80,6 +83,25 @@ const styles = ScaledSheet.create({
         textAlign: 'center',
         color: '#454242',
         marginLeft: '10@s',
+    },
+    packageCartopen: {
+        backgroundColor: 'rgba(71, 90, 215, 0.15)',
+        borderWidth: 1,
+        borderColor: '#475AD7',
+        borderStyle: 'dashed',
+        borderRadius: 15,
+        width: '100%',
+        marginTop: '10@vs',
+        marginBottom: '20@vs',
+        alignItems: 'flex-start',
+        padding: '10@s',
+        flex: 1,
+        opacity: .6
+    },
+    newLabel: {
+        fontSize: 22,
+        color: 'red',  // Highlight as "New" with a red color
+        textAlign: 'center',
+        marginLeft: 10
     }
-
 });

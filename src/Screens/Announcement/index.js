@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
-    Image,
     TouchableOpacity,
     FlatList,
     ScrollView,
@@ -21,7 +20,7 @@ export default function AnnouncementScreen() {
     const navigation = useNavigation();
     const [adds, setAdds] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { t, i18n } = useTranslation(); // Use the t function to translate text
+    const { t } = useTranslation(); // Use the t function to translate text
     const currentLanguage = useSelector((state) => state.language);
     useEffect(() => {
         // Fetch data from the API
@@ -113,7 +112,6 @@ const styles = ScaledSheet.create({
         textAlign: 'center',
         color: '#454242',
         marginBottom: '20@vs'
-
     },
     package: {
         flex: 1,

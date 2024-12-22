@@ -24,10 +24,9 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require("../../../Assets/Logo/resized-image-Promo.jpeg")}
-        style={{ width: width, height: height }}
-        resizeMode='stretch'
-        
+        source={require("../../../Assets/Logo/Untitled-11.png")}
+        style={{ width: width, height:height }}
+        resizeMode='center'        
       />
     </View>
   );

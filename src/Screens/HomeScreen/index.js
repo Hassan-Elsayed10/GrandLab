@@ -7,7 +7,8 @@ import {
     FlatList,
     TouchableOpacity,
     ActivityIndicator,
-    Dimensions
+    Dimensions,
+    Alert
 } from 'react-native';
 import { ScaledSheet } from 'react-native-size-matters';
 import MenuIcon from '../../../Assets/Icons/menu';
@@ -18,6 +19,8 @@ import { useTranslation } from 'react-i18next'; // Import useTranslation from re
 import { useSelector, useDispatch } from 'react-redux';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchIdAndData } from '../../Store/resultSlice';
+import Modal from 'react-native-modal';
+
 const img1 = require('../../../Assets/Images/BookTest.png')
 const img2 = require('../../../Assets/Images/BOOK.png')
 const img3 = require('../../../Assets/Images/Branch.png')
@@ -36,30 +39,46 @@ export default function HomeScreen() {
     const [packages, setPackages] = useState([]);
     const [loading, setLoading] = useState(false);
     const currentLanguage = useSelector((state) => state.language);
+    const authenticated = useSelector((state) => state.auth.authenticated);
     const { t, i18n } = useTranslation(); // Use the t function to translate text
     const { width, height } = Dimensions.get('window');
     const imageWidth = width * 0.3; // Adjust the percentage as needed
     const imageHeight = height * 0.2; // Adjust the percentage as needed
-    const result = useSelector((state) => state.data.data);
-    const notificationCount = useSelector((state) => {
+    // const result = useSelector((state) => state.data.data);
+    const notificationCount = authenticated ? useSelector((state) => {
         const results = state.data.data || [];
         const unopenedResults = results.filter((item) => !item.isOpened);
         return unopenedResults.length;
-    });
+    }) : 0;
 
     const dispatch = useDispatch()
-    useEffect(()=>{
-        dispatch(fetchIdAndData())
-    },[])
+    useEffect(() => {
+        if (authenticated) {
+            dispatch(fetchIdAndData());
+        }
+    }, [dispatch, authenticated]);
+
     useFocusEffect(
         React.useCallback(() => {
-            dispatch(fetchIdAndData());
-        }, [dispatch])
+            if (authenticated) {
+                dispatch(fetchIdAndData());
+            }
+        }, [dispatch, authenticated])
     );
-    const  open = ()=>{
-        navigation.navigate('ShowResult');
-    }
-
+    const open = () => {
+        if (authenticated) {
+            navigation.navigate('ShowResult');
+        } else {
+            Alert.alert(
+                t('LoginRequired'),
+                t('PleaseLoginFirst'),
+                [
+                    { text: t('OK') }
+                ],
+                { cancelable: false }
+            );
+        }
+    };
     useEffect(() => {
         // Fetch data from the API
         setLoading(true);
@@ -102,6 +121,7 @@ export default function HomeScreen() {
                     onPress={() => navigation.openDrawer()}>
                     <MenuIcon />
                 </TouchableOpacity>
+
                 <TouchableOpacity onPress={open}>
                     <Icon name="bell" size={35} color="#457AD7" />
                     {notificationCount > 0 && (
@@ -120,6 +140,7 @@ export default function HomeScreen() {
                         </View>
                     )}
                 </TouchableOpacity>
+
             </View>
 
             <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
@@ -279,7 +300,7 @@ const styles = ScaledSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        margin:"5@s"
+        margin: "5@s"
     },
     headerimg: {
         width: '35@vs',

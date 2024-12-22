@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { TouchableOpacity } from 'react-native';
-import { View, Text, StyleSheet, Image, I18nManager } from 'react-native';
+import { View, Text, StyleSheet, Image, I18nManager,Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import { useSelector, useDispatch } from 'react-redux';
@@ -13,11 +13,38 @@ import RNRestart from 'react-native-restart';
 export default function CustomDrawerContent() {
     const navigation = useNavigation();
     const [token, setToken] = useState(null);
+    const [langText, setLangText] = useState(''); // Initial icon
     const authenticated = useSelector((state) => state.auth.authenticated);
     const dispatch = useDispatch();
     const currentLanguage = useSelector((state) => state.language);
 
     const { t, i18n } = useTranslation(); // Use the t function to translate text
+
+    const open = () => {
+        if (authenticated) {
+            navigation.navigate('ShowResult');
+        } else {
+            Alert.alert(
+                t('LoginRequired'),
+                t('PleaseLoginFirst'),
+                [
+                    { text: t('OK') }
+                ],
+                { cancelable: false }
+            );
+        }
+    };
+
+    useEffect(() => {
+        // Check and set the initial language text
+        AsyncStorage.getItem('selectedLanguage').then((lang) => {
+            if (lang) {
+                setLangText(lang === 'ar' ? 'English' : 'Arabic');
+            }
+        }).catch((error) => {
+            console.error('Error fetching language from AsyncStorage:', error);
+        });
+    }, []);
 
     const toggleLanguage = () => {
         const newLang = currentLanguage === 'en' ? 'ar' : 'en';
@@ -26,14 +53,15 @@ export default function CustomDrawerContent() {
         if (newLang === 'ar') {
             I18nManager.allowRTL(true);
             I18nManager.forceRTL(true);
-            RNRestart.Restart();
+            setLangText('English'); // Set icon to English when language is Arabic
         } else {
-            // Reset to LTR for other languages
             I18nManager.allowRTL(false);
             I18nManager.forceRTL(false);
-            RNRestart.Restart();
+            setLangText('Arabic'); // Set icon to Arabic for other languages
+        }
+        RNRestart.Restart(); // Restart the app to apply the changes
 
-        }        // Save the newLang to AsyncStorage for future use
+        // Save the newLang to AsyncStorage for future use
         AsyncStorage.setItem('selectedLanguage', newLang).catch((error) => {
             console.error('Error saving language to AsyncStorage:', error);
         });
@@ -90,7 +118,7 @@ export default function CustomDrawerContent() {
                             <Image source={require('../../Assets/Icons/package.png')} style={{ width: 40, height: 40 }} />
                             <Text style={styles.text}>{t('HeaderPackage')}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.menuContainer} onPress={() => navigation.navigate('ShowResult')}>
+                        <TouchableOpacity style={styles.menuContainer} onPress={open}>
                             <Image source={require('../../Assets/Icons/notepad.png')} style={{ width: 40, height: 40 }} />
                             <Text style={styles.text}>{t('HeaderShowResult')}</Text>
                         </TouchableOpacity>
@@ -108,7 +136,7 @@ export default function CustomDrawerContent() {
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.menuContainer} onPress={toggleLanguage}>
                             <Image source={require('../../Assets/Icons/translating.png')} style={{ width: 40, height: 40 }} />
-                            <Text style={styles.text}>{t('HeaderLang')}</Text>
+                            <Text style={styles.text}>{langText}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.menuContainer} onPress={handleLoginLogout}>
                             {authenticated ? (
@@ -133,7 +161,7 @@ export default function CustomDrawerContent() {
                             <Image source={require('../../Assets/Icons/package.png')} style={{ width: 40, height: 40 }} />
                             <Text style={styles.text}>{t('HeaderPackage')}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.menuContainer} onPress={() => navigation.navigate('ShowResult')}>
+                        <TouchableOpacity style={styles.menuContainer} onPress={open}>
                             <Image source={require('../../Assets/Icons/notepad.png')} style={{ width: 40, height: 40 }} />
                             <Text style={styles.text}>{t('HeaderShowResult')}</Text>
                         </TouchableOpacity>
@@ -151,7 +179,7 @@ export default function CustomDrawerContent() {
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.menuContainer} onPress={toggleLanguage}>
                             <Image source={require('../../Assets/Icons/translating.png')} style={{ width: 40, height: 40 }} />
-                            <Text style={styles.text}>{t('HeaderLang')}</Text>
+                            <Text style={styles.text}>{langText}</Text>
                         </TouchableOpacity>
 
 

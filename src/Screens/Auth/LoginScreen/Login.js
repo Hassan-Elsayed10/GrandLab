@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setAuthenticated } from '../../../Store/authSlice';
 import { useTranslation } from 'react-i18next'; // Import useTranslation from react-i18next
 
@@ -29,7 +29,7 @@ const Login = () => {
     const [Passworderror, setPasswordError] = useState('');
     const [Emailerror, setEmailError] = useState('');
     const [status, setStatus] = useState(''); // Initialize with an empty status
-    const { t, i18n } = useTranslation(); // Use the t function to translate text
+    const { t } = useTranslation(); // Use the t function to translate text
 
     const dispatch = useDispatch();
 
@@ -59,13 +59,10 @@ const Login = () => {
                 const accessToken = JSON.stringify(responseData.accessToken);
                 await AsyncStorage.setItem('accessToken', accessToken);
                 navigation.navigate('DrawerStack');
-                setStatus('')
-            // } else if (response.status === 401) {
-            //     setStatus('Unauthorized: Email and password do not match any user.');
+                setStatus('');
             } else {
                 dispatch(setAuthenticated(false));
                 setStatus(`Failed to Log In: ${response.statusText}`);
-                //   console.error('API Response:', response);
             }
         } catch (error) {
             if (error.response) {
@@ -95,7 +92,7 @@ const Login = () => {
                 setTimeout(() => {
                     setStatus('');
                     // Additional actions or state changes if needed
-                  }, 5000);
+                }, 5000);
             } else {
                 setStatus('Network Error: Unable to connect to the server.');
             }
@@ -181,7 +178,7 @@ const Login = () => {
                         {Passworderror ? <Text style={{ color: 'red', marginLeft: 5 }}>{Passworderror}</Text> : null}
                         <TextInput
                             style={styles.textInput1}
-                            placeholder={t("pass")} 
+                            placeholder={t("pass")}
                             secureTextEntry={passwordVisible}
                             placeholderTextColor="#565656"
                             onChangeText={handlePasswordChange}
@@ -311,7 +308,7 @@ const styles = StyleSheet.create({
         margin: '3%',
         width: '100%',
         fontSize: 16,
-        flex:1
+        flex: 1
     },
     textInput1: {
         height: 40,
@@ -319,7 +316,7 @@ const styles = StyleSheet.create({
         margin: '3%',
         width: '100%',
         fontSize: 16,
-        flex:1,
+        flex: 1,
     },
     eyeIcon: {
         flex: 1,

@@ -102,7 +102,14 @@
   "HeaderShowResult":"اعرف نتيجتك",
   "HeaderAbout":"أعرف عنا",
   "HeaderPartners":"شركاؤنا",
-  "HeaderResult1":"نتائجك"
+  "Notifications":"لا يوجد اشعارات ",
+  "HeaderResult1":"الأشعارت",
+  "LabelBr":"أختر الفرع",
+  "complainmsg":"هل هناك أي شكوى أو استفسار؟",
+  "needhelp":"هل تحتاج المساعدة؟",
+  "write to us":"أكتب لنا",
+  "msgfeedback":"اكتب ملاحظاتك هنا...",
+  "submit":"إرسال"
 
 
 }

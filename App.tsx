@@ -9,10 +9,8 @@ import { Router } from './src/Navigation';
 import { useDispatch } from 'react-redux';
 import { setAuthenticated } from './src/Store/authSlice';
 import { setLanguage } from './src/Store/languageSlice';
-import PackageSet from './src/Component/packageset';
 import Orientation from 'react-native-orientation-locker';
 import i18n from './src/Lang/i18n';
-import Pdfsscreen from './src/Screens/pdf';
 
 function App(): JSX.Element {
   const [token, setToken] = useState(null);

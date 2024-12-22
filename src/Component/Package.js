@@ -38,7 +38,8 @@ const styles = ScaledSheet.create({
         padding: '5@vs',
         backgroundColor: '#FFF',
         flex:1,
-        alignItems:'center'
+        alignItems:'center',
+    
     },
     cart: {
         backgroundColor: '#F0F0F0',

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'; // Import useEffect and useState
+import { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -7,11 +7,12 @@ import {
     TextInput,
     KeyboardAvoidingView,
     ScrollView,
-    ActivityIndicator
+    ActivityIndicator,
+    StyleSheet
 } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ArrowIcon from "../../../Assets/Icons/Arrow";
-import axios from 'axios'; // Import Axios for HTTP requests
+import axios from 'axios';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { setAuthenticated } from '../../Store/authSlice';
@@ -19,8 +20,9 @@ import Modal from 'react-native-modal';
 import { launchImageLibrary } from 'react-native-image-picker';
 import styles from './styles';
 import { useFocusEffect } from '@react-navigation/native';
-import { useTranslation } from 'react-i18next'; // Import useTranslation from react-i18next
+import { useTranslation } from 'react-i18next';
 import ArrowRIcon from '../../../Assets/Icons/ArrowRight';
+import RNPickerSelect from 'react-native-picker-select';
 
 export default function BookTest() {
     const navigation = useNavigation();
@@ -35,6 +37,7 @@ export default function BookTest() {
     const [isAge, setIsAge] = useState(false);
     const [isPhoneFocused, setPhoneFocused] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [loadingBranch, setLoadingBranch] = useState(false);
     const [loadingphoto, setLoadingphoto] = useState(false);
     const [status, setStatus] = useState('');
     const authenticated = useSelector((state) => state.auth.authenticated);
@@ -42,9 +45,50 @@ export default function BookTest() {
     const [isModalVisible, setModalVisible] = useState(true);
     const [isAllFieldsFilled, setAllFieldsFilled] = useState(true);
     const [prescription, setImageURL] = useState('');
-    const { t, i18n } = useTranslation(); // Use the t function to translate text
+    const { t } = useTranslation();
     const currentLanguage = useSelector((state) => state.language);
+    const [branches, setBranches] = useState([]);
+    const [branchID, setSelectedBranch] = useState(null);
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoadingBranch(true);
+            try {
+                const lang = currentLanguage === 'en' ? 'eng' : 'arab';
+                const response = await axios.get(`https://grandlabs-backend-patient.vercel.app/branches?lang=${lang}`);
 
+                if (response.data && response.data.branches) {
+                    const fetchedBranches = response.data.branches
+                        .map(branch => {
+                            return {
+                                label: branch.name,
+                                value: branch._id // Make sure 'id' is the correct field
+                            };
+                        })
+                        .filter(branch => {
+                            if (!branch.label || !branch.value) {
+                                console.warn('Branch missing label or value:', branch);
+                                return false;
+                            }
+                            return true;
+                        });
+                    console.log('Filtered branches:', fetchedBranches); // Log filtered branches
+                    setBranches(fetchedBranches);
+                } else {
+                    console.log('No branches found in response data');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        setLoadingBranch(false);
+
+        fetchData();
+    }, [currentLanguage]);
+
+
+    const handleBranchChange = (value) => {
+        setSelectedBranch(value);
+    };
     const route = useRoute();
     const openImagePicker = () => {
         const options = {
@@ -55,27 +99,24 @@ export default function BookTest() {
             },
         };
         launchImageLibrary(options, async (response) => {
-            // Check if there are assets in the response and if the first asset has a URI
             if (response.assets && response.assets.length > 0 && response.assets[0].uri) {
                 const selectedImage = response.assets[0];
                 uploadToCloudinary(selectedImage.uri);
-
             }
         });
     };
 
     const cloudinaryUploadUrl = "https://api.cloudinary.com/v1_1/drtx3ul9r/image/upload";
     const uploadToCloudinary = async (imageUri) => {
-        setLoadingphoto(true)
-
+        setLoadingphoto(true);
         try {
             const formData = new FormData();
             formData.append('file', {
                 uri: imageUri,
-                type: 'image/jpeg', // Adjust this based on the image type
-                name: 'image.jpg',  // Adjust the file name as needed
+                type: 'image/jpeg',
+                name: 'image.jpg',
             });
-            formData.append('upload_preset', 'grandApp'); // Replace with your Cloudinary upload preset
+            formData.append('upload_preset', 'grandApp');
 
             const response = await axios.post(cloudinaryUploadUrl, formData, {
                 headers: {
@@ -85,19 +126,14 @@ export default function BookTest() {
 
             if (response.data.secure_url) {
                 setImageURL(response.data.secure_url);
-                // You can use imageUrl as needed (e.g., store it in your database, display it, etc.)
             } else {
                 console.log('Error uploading image to Cloudinary:', response.data);
             }
         } catch (error) {
             console.error('Error uploading image to Cloudinary:', error.response?.data || error.message);
         }
-        setLoadingphoto(false)
-
+        setLoadingphoto(false);
     };
-
-
-
 
     useEffect(() => {
         async function fetchData() {
@@ -105,9 +141,7 @@ export default function BookTest() {
                 const Token = await AsyncStorage.getItem('accessToken');
                 const accessToken = JSON.parse(Token);
                 if (Token) {
-                    // User is authenticated
                     dispatch(setAuthenticated(true));
-                    // User is authenticated
                     const response = await axios.get('https://grandlabs-backend-patient.vercel.app/profile', {
                         headers: {
                             Authorization: accessToken
@@ -117,37 +151,37 @@ export default function BookTest() {
                     setfirstName(profileData.firstName);
                     setlastName(profileData.lastName);
                     setPhone(profileData.phone);
-                    setTest(route.params);
-
+                    if (route.params?.requestName) {
+                        setTest(route.params.requestName);
+                    }
                 } else {
                     dispatch(setAuthenticated(false));
                 }
-
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             }
         }
+        fetchData();
+    }, [dispatch, route.params]);
 
-        fetchData(); // Call the async function immediately
-
-    }, [dispatch]);
     const handleLogin = () => {
         setModalVisible(false);
-        navigation.navigate('Loginx')
-    }
+        navigation.navigate('Loginx');
+    };
     const handlegeust = () => {
         setModalVisible(false);
-        navigation.navigate('HomeScreen')
-    }
+        navigation.navigate('HomeScreen');
+    };
+
     useFocusEffect(() => {
         if (!authenticated) {
             setModalVisible(true);
         }
     });
+
     const NoAuth = () => {
-        // You can navigate to the login screen or perform any other action for unauthenticated users here
         return (
-            <Modal isVisible={isModalVisible} >
+            <Modal isVisible={isModalVisible}>
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                     <View style={{ backgroundColor: 'white', padding: 16, borderRadius: 20 }}>
                         <TouchableOpacity style={styles.button1} onPress={handleLogin}>
@@ -167,45 +201,35 @@ export default function BookTest() {
 
     useEffect(() => {
         const fieldsToCheck = [prescription, requestName];
-
         const atLeastOneFieldFilled = fieldsToCheck.some(field => (field || '').trim() !== '');
         setAllFieldsFilled(
-            firstName.trim() !== '' &&
-            lastName.trim() !== '' &&
-            phone.trim() !== '' &&
-            age.trim() !== '' &&
+            (firstName || '').trim() !== '' &&
+            (lastName || '').trim() !== '' &&
+            (phone || '').trim() !== '' &&
+            (age || '').trim() !== '' &&
+            (branchID || '').trim() !== '' &&
             atLeastOneFieldFilled
         );
-    }, [firstName, lastName, phone, prescription, requestName, age]);
+    }, [firstName, lastName, phone, prescription, requestName, age, branchID]);
 
     const postDataToApi = async () => {
         setLoading(true);
         try {
             const Token = await AsyncStorage.getItem('accessToken');
             const accessToken = JSON.parse(Token);
-
-            // Create an object to hold the data to be sent in the reques
             const requestData = {
                 firstName,
                 lastName,
                 phone,
                 age,
+                ...(requestName.trim() !== '' && { requestName }),
+                ...(prescription.trim() !== '' && { prescription }),
+                ...(branchID && { branchID: branchID }),
             };
-
-            // Check if requestName is provided and not empty, then add it to the requestData object
-            if (requestName && requestName.trim() !== '') {
-                requestData.requestName = requestName;
-            }
-
-            // Check if prescription is provided and not empty, then add it to the requestData object
-            if (prescription && prescription.trim() !== '') {
-                requestData.prescription = prescription;
-            }
-
-            // Make the POST request to the API with the requestData object
+            console.log(requestData)
             const response = await axios.post(
                 "https://grandlabs-backend-patient.vercel.app/labVisitRequests",
-                requestData, // Pass requestData directly as the request body
+                requestData,
                 {
                     headers: {
                         Authorization: accessToken,
@@ -213,26 +237,19 @@ export default function BookTest() {
                 }
             );
 
-            // Check the response status code
             if (response.status === 200) {
-                navigation.navigate('SuccessfulBook')
+                navigation.navigate('SuccessfulBook');
             } else {
-                // Request was not successful, set an error message
                 setStatus('Failed to Book.');
             }
         } catch (error) {
             if (error.response) {
                 const status = error.response.status;
-                const errorMessage = error.response.data.Message; // Assuming error message is in this format
-
-                switch (status) {
-                    case 422:
-                        if (errorMessage === 'Validation faild') {
-                            setStatus('Enter all data');
-                        }
-                    default:
-                        setStatus('Other Error: An unexpected error occurred.');
-                        break;
+                const errorMessage = error.response.data.Message;
+                if (status === 422 && errorMessage === 'Validation faild') {
+                    setStatus('Enter all data');
+                } else {
+                    setStatus('Other Error: An unexpected error occurred.');
                 }
             } else {
                 setStatus('Network Error: Unable to connect to the server.');
@@ -241,48 +258,38 @@ export default function BookTest() {
         setLoading(false);
     };
 
-
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             {authenticated ? (
-
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <View style={styles.row} >
-                        {
-                            currentLanguage == 'ar' ?
-                                <TouchableOpacity
-                                    hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
-                                    onPress={() => navigation.goBack()} >
-                                    <ArrowRIcon />
-                                </TouchableOpacity>
-                                :
-                                <TouchableOpacity
-                                    hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
-                                    onPress={() => navigation.goBack()} >
-                                    <ArrowIcon />
-                                </TouchableOpacity>
-
-                        }
+                    <View style={styles.row}>
+                        {currentLanguage == 'ar' ? (
+                            <TouchableOpacity
+                                hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
+                                onPress={() => navigation.goBack()}
+                            >
+                                <ArrowRIcon />
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity
+                                hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}
+                                onPress={() => navigation.goBack()}
+                            >
+                                <ArrowIcon />
+                            </TouchableOpacity>
+                        )}
                         <Text style={styles.text}>{t("HeaderBookTest")}</Text>
                     </View>
                     {status !== '' && <Text style={styles.error}>{status}</Text>}
 
                     <View style={styles.textInputContainer}>
-                        <View
-                            style={[
-                                styles.inputWrapper,
-                                isFirstName && styles.inputFocused,
-                            ]}
-                        >
+                        <View style={[styles.inputWrapper, isFirstName && styles.inputFocused]}>
                             <Image
                                 source={require('../../../Assets/Icons/user.png')}
-                                style={[
-                                    styles.inputIcon,
-                                    isFirstName && styles.iconFocused,
-                                ]}
+                                style={[styles.inputIcon, isFirstName && styles.iconFocused]}
                                 resizeMode="contain"
                             />
                             <TextInput
@@ -295,18 +302,10 @@ export default function BookTest() {
                                 onChangeText={setfirstName}
                             />
                         </View>
-                        <View
-                            style={[
-                                styles.inputWrapper,
-                                isLastName && styles.inputFocused,
-                            ]}
-                        >
+                        <View style={[styles.inputWrapper, isLastName && styles.inputFocused]}>
                             <Image
                                 source={require('../../../Assets/Icons/user.png')}
-                                style={[
-                                    styles.inputIcon,
-                                    isLastName && styles.iconFocused,
-                                ]}
+                                style={[styles.inputIcon, isLastName && styles.iconFocused]}
                                 resizeMode="contain"
                             />
                             <TextInput
@@ -319,18 +318,10 @@ export default function BookTest() {
                                 onChangeText={setlastName}
                             />
                         </View>
-                        <View
-                            style={[
-                                styles.inputWrapper,
-                                isAge && styles.inputFocused,
-                            ]}
-                        >
+                        <View style={[styles.inputWrapper, isAge && styles.inputFocused]}>
                             <Image
                                 source={require('../../../Assets/Icons/user.png')}
-                                style={[
-                                    styles.inputIcon,
-                                    isAge && styles.iconFocused,
-                                ]}
+                                style={[styles.inputIcon, isAge && styles.iconFocused]}
                                 resizeMode="contain"
                             />
                             <TextInput
@@ -341,20 +332,14 @@ export default function BookTest() {
                                 onBlur={() => setIsAge(false)}
                                 value={age}
                                 onChangeText={setAge}
+                                keyboardType="numeric"
+
                             />
                         </View>
-                        <View
-                            style={[
-                                styles.inputWrapper,
-                                isPhoneFocused && styles.inputFocused,
-                            ]}
-                        >
+                        <View style={[styles.inputWrapper, isPhoneFocused && styles.inputFocused]}>
                             <Image
                                 source={require('../../../Assets/Icons/call.png')}
-                                style={[
-                                    styles.inputIcon,
-                                    isPhoneFocused && styles.iconFocused,
-                                ]}
+                                style={[styles.inputIcon, isPhoneFocused && styles.iconFocused]}
                                 resizeMode="contain"
                             />
                             <TextInput
@@ -368,18 +353,10 @@ export default function BookTest() {
                                 keyboardType='phone-pad'
                             />
                         </View>
-                        <View
-                            style={[
-                                styles.inputWrapper,
-                                isTest && styles.inputFocused,
-                            ]}
-                        >
+                        <View style={[styles.inputWrapper, isTest && styles.inputFocused]}>
                             <Image
                                 source={require('../../../Assets/Icons/test.png')}
-                                style={[
-                                    styles.inputIcon,
-                                    isTest && styles.iconFocused,
-                                ]}
+                                style={[styles.inputIcon, isTest && styles.iconFocused]}
                                 resizeMode="contain"
                             />
                             <TextInput
@@ -392,45 +369,70 @@ export default function BookTest() {
                                 onChangeText={setTest}
                             />
                         </View>
-                        {loadingphoto ?
-                            (
-                                <ActivityIndicator visible={loading} size={20} />
-                            )
+                        <Text style={styles.selectbranch}>Please choose the branch where you want to do the test.</Text>
+                        {loadingBranch ?
+                            (<RNPickerSelect
+                                onValueChange={handleBranchChange}
+                                items={branches}
+                                value={branchID}
+                                placeholder={{ label: t('LabelBr'), value: null }}
+                                style={pickerSelectStyles}
+                                useNativeAndroidPickerStyle={false}
+                            />)
                             :
                             (
-                                <TouchableOpacity
-                                    style={styles.button}
-                                    onPress={openImagePicker}
-                                >
-                                    <Text
-                                        style={
-                                            [prescription.trim() !== '' ? styles.buttonupbload : styles.buttonText]
-                                        }>
-                                        {prescription.trim() !== '' ? t('Uploaded') : t('Upload')}
-                                    </Text>
-                                </TouchableOpacity>
+                                <ActivityIndicator visible={loading} size={20} />
                             )
                         }
+
+                        {loadingphoto ? (
+                            <ActivityIndicator visible={loading} size={20} />
+                        ) : (
+                            <TouchableOpacity style={styles.button} onPress={openImagePicker}>
+                                <Text style={prescription.trim() !== '' ? styles.buttonupbload : styles.buttonText}>
+                                    {prescription.trim() !== '' ? t('Uploaded') : t('Upload')}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
-                    {
-                        isAllFieldsFilled ? (
-                            loading ? (
-                                <ActivityIndicator visible={loading} size={20} />
-                            ) : (
-                                <TouchableOpacity
-                                    style={styles.button1}
-                                    onPress={postDataToApi}
-                                >
-                                    <Text style={styles.buttonText1}>{t('Book')}</Text>
-                                </TouchableOpacity>
-                            )
-                        ) : null
-                    }
+                    {isAllFieldsFilled && (
+                        loading ? (
+                            <ActivityIndicator visible={loading} size={20} />
+                        ) : (
+                            <TouchableOpacity style={styles.button1} onPress={postDataToApi}>
+                                <Text style={styles.buttonText1}>{t('Book')}</Text>
+                            </TouchableOpacity>
+                        )
+                    )}
                 </ScrollView>
-            )
-                :
+            ) : (
                 NoAuth()
-            }
+            )}
         </KeyboardAvoidingView>
     );
 }
+const pickerSelectStyles = StyleSheet.create({
+    inputIOS: {
+        fontSize: 20,
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: '#475AD7',
+        borderRadius: 4,
+        color: '#475AD7',
+        paddingRight: 30, // to ensure the text is never behind the icon
+    },
+    inputAndroid: {
+        fontSize: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        borderWidth: 1,
+        borderColor: '#475AD7',
+        borderRadius: 8,
+        color: '#475AD7',
+        paddingRight: 30, // to ensure the text is never behind the icon
+    },
+    placeholder: {
+        color: 'gray',
+    }
+});
